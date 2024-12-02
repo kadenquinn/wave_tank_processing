@@ -1,10 +1,10 @@
+%% future script for L1 QC 
+%% 0 . load add path ect
 clear
 close
 % add paths
 addpath('functions/')
-addpath('gopro_cam_cal/')
-addpath('data_structs/')
-addpath('Colormaps/')
+addpath('data')
 
 % load data structs
 load('test_9_11.mat')
