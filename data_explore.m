@@ -1,249 +1,481 @@
+%% script for messing around with techniques 
+%% 0. load/add path
 clear
 close 
 % add stuff to path 
 addpath('functions/')
-addpath('data_structs/')
+addpath('data/')
+%% 1. get video strcut and frames
+% define video filename 
+test_struct = 'test_9_11';   
+data_struct = load([test_struct '.mat']);
+test_ID = 'A';               
+camera_ID = 'GoPro_0';         
+run_num=3;
+filename = data_struct.(test_struct).(test_ID).(camera_ID)(run_num);
 
-% load data structs 
-load('test_9_11.mat')
-load('test_9_24.mat')
-%% inputs 
-video_path = "test_1_9_11_2024/gopro_1/";  %"test_1_9_11_2024/gopro_1/"
-test_ID = 'A';      % A B C 
-camera_ID = 'GoPro_1';   % GoPro_0 GoPro_1 RED GoPro
-run_num=3;   
-wave_num = 4;
-
-% filename for test, run, and camera  
-filename = test_9_11.(test_ID).(camera_ID)(run_num); % camera filename 
-
-freq = test_9_11.paddle_data.freq(run_num); 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% shift start and end frame indexes if needed
-shift_start = 0;
-shift_end = 0;
-
-% number of frames for figure 
-num_frames = 8;
-
-Hcrop=[0.35 0.8];
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% define video path 
+video_path = "test_1_9_11_2024/GoPro_0/"; 
 
 % create video object 
 VideoObj=VideoReader(append(video_path,filename));
 
-% approximate start and end frame indexes for wave num
-FrameRate = VideoObj.FrameRate;
-[frame_start,frame_end] = approx_waves(freq,wave_num,FrameRate);
+% desired frames 
 
-% shift start and end frame indexes 
-frame_start = frame_start + shift_start;
-frame_end = frame_end + shift_end;
-time_start = frame2time(frame_start,FrameRate);
-time_end = frame2time(frame_end,FrameRate);
+% method 1: load predefined start and end frame
+addpath('ii_start_end_frame/')
+load('test_9_11_A3_GoPro_0_wave_4.mat')
 
-% get num_frames from start to end frame
-ii_frame_num = round(linspace(frame_start,frame_end,num_frames));
+% method 2: set start and end frame here
+% ii_start_end_frame = [1 10];
 
+% method 1: set total number of frames from start to end 
+ii_frame_num = round(linspace(ii_start_end_frame(1),ii_start_end_frame(2),5));
+
+% method 2: set frame spacing from start to end 
+%ii_frame_num = ii_start_end_frame(1):10:ii_start_end_frame(2);
 Frames = get_frames(VideoObj,ii_frame_num);
+%% 2. full color, full size 
 
+% check size of frames 
 [H,W,~,~]=size(Frames);
 
-Hcrop=(Hcrop(1)*H+1):(Hcrop(2)*H);
+% example of no crop 
+%Hcrop=1:H;
+%Wcrop=1:W;
 
-% make figure 
-tiledlayout(num_frames/2,2);
+% crop 
+Hcrop=(900:1300); 
+Wcrop=(1:W);  
+
+% set up tile layout specs
+tile_rows = 5;
+tile_columns = 1; 
+tile=tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
-imshow(Frames(Hcrop,:,:,n))
-text(1,1,['frame: ' num2str(ii_frame_num(n)) ' t: ' num2str(time_start)],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
-
-if n==1
-    title([test_ID num2str(run_num) ' ' camera_ID ' wave:' num2str(wave_num)])
+imshow(Frames(Hcrop,Wcrop,:,n))
+text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
 end
-
-end
-%%
-
-ii_frame=4;
-
-F=Frames(Hcrop,:,:,ii_frame);
-
-F_r=Frames(Hcrop,:,1,ii_frame);
-F_g=Frames(Hcrop,:,2,ii_frame);
-F_b=Frames(Hcrop,:,3,ii_frame);
-
-low_in = 0;
-high_in = 1;
-F_r=imadjust(F_r,[low_in high_in]);
-F_g=imadjust(F_g,[low_in high_in]);
-F_b=imadjust(F_b,[low_in high_in]);
-
-F(:,:,1)=F_r;
-F(:,:,2)=F_g;
-F(:,:,3)=F_b;
-
-hsv = rgb2hsv(F);
-F_h=hsv(:,:,1);
-F_s=hsv(:,:,2);
-F_v=hsv(:,:,3);
-
-low_in = 0;
-high_in = 1;
-F_h=imadjust(F_h,[low_in high_in]);
-F_s=imadjust(F_s,[low_in high_in]);
-F_v=imadjust(F_v,[low_in high_in]);
-
-
-THRESH=[0.01 0.03]+0.01;
-
-BW = edge(im2gray(F),'canny',THRESH);
-
-BW_r = edge(F_r,'canny',THRESH);
-BW_g = edge(F_g,'canny',THRESH);
-BW_b = edge(F_b,'canny',THRESH);
-
-BW_h = edge(F_h,'canny',THRESH);
-BW_s = edge(F_s,'canny',THRESH);
-BW_v = edge(F_v,'canny',THRESH);
-
-[x_r,Y_r] = get_true_pixels(BW_r);
-[x_g,Y_g] = get_true_pixels(BW_g);
-[x_b,Y_b] = get_true_pixels(BW_b);
-
-redmap=[linspace(0,1,256)' zeros(256,1) zeros(256,1)];
-greenmap=[zeros(256,1) linspace(0,1,256)' zeros(256,1)];
-bluemap=[zeros(256,1) zeros(256,1) linspace(0,1,256)' ];
-
-%% hsv edges 
-tile=tiledlayout(3,2);
-t1 = nexttile;
-imshow(F_h)
-colormap(t1,"hsv")
-colorbar
-
-t2= nexttile;
-imshow(BW_h)
-title(['edges= ' num2str(sum(BW_h,'all')) ' THRESH= ' num2str(THRESH)])
-
-
-t3 = nexttile;
-imshow(F_s)
-colormap(t3,"hsv")
-
-t4= nexttile;
-imshow(BW_s)
-title(['edges= ' num2str(sum(BW_s,'all')) ' THRESH= ' num2str(THRESH)])
-
-
-t5 = nexttile;
-imshow(F_v)
-colormap(t5,"hsv")
-
-t6= nexttile;
-imshow(BW_v)
-title(['edges= ' num2str(sum(BW_v,'all')) ' THRESH= ' num2str(THRESH)])
-
-
 tile.Padding = 'tight';
 tile.TileSpacing = 'tight';
-%% rgb edges 
-tile=tiledlayout(3,2);
-t1 = nexttile;
-imshow(F_r)
-colormap(t1,redmap)
+%% 3. resize and recolor
+Frames_resized = get_resized_frames(Frames(Hcrop,Wcrop,:,:),0.1);
+Frames_resized_hsv = get_hsv_frames(Frames_resized);
+Frames_resized_gray = get_gray_frames(Frames_resized);
 
-t2= nexttile;
-imshow(BW_r)
-title(['edges= ' num2str(sum(BW_r,'all')) ' THRESH= ' num2str(THRESH)])
-
-t3 = nexttile;
-imshow(F_g)
-colormap(t3,greenmap)
-title('Green')
-
-t4= nexttile;
-imshow(BW_g)
-title(['edges= ' num2str(sum(BW_g,'all')) ' THRESH= ' num2str(THRESH)])
-
-
-t5 = nexttile;
-imshow(F_b)
-colormap(t5,bluemap)
-title('Blue')
-
-t6= nexttile;
-imshow(BW_b)
-title(['edges= ' num2str(sum(BW_b,'all')) ' THRESH= ' num2str(THRESH)])
-
-
-tile.Padding = 'tight';
-tile.TileSpacing = 'tight';
-
-%% histograms 
-tiledlayout(3,2)
+tiledlayout(tile_rows,tile_columns);
+for n=1:length(ii_frame_num)
 nexttile
-histogram(F_r,'FaceColor',[1 0 0])
-title('Red')
+imshow(Frames_resized(:,:,:,n))
+text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
+end
+%% 4. adjust gray image 
+low_in=0.3;
+high_in=1;
+Frames_resized_adj = get_adj_frames(Frames_resized,low_in,high_in);
+
+tiledlayout(tile_rows,tile_columns);
+for n=1:length(ii_frame_num)
+nexttile
+imshow(Frames_resized_adj(:,:,n))
+text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
+end
+colormap(inferno(20))
+
+%% 5. hsv histograms 
+tiledlayout(3,1)
+
+hist_edges = 0:0.025:1;
+nexttile
+histogram(Frames_resized_hsv(:,:,1,:),hist_edges)
+title('h')
 
 nexttile
-histogram(F_h,'FaceColor',[0 0 0])
-title('Hue')
+histogram(Frames_resized_hsv(:,:,2,:),hist_edges)
+title('s')
 
 nexttile
-histogram(F_g,'FaceColor',[0 1 0])
-title('Green')
+histogram(Frames_resized_hsv(:,:,3,:),hist_edges)
+title('v')
+%% 5.1 hue
+tiledlayout(tile_rows,tile_columns);
+for n=1:length(ii_frame_num)
+nexttile
+imshow(Frames_resized_hsv(:,:,1,n))
+text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
+end
+cb=colorbar;
+cb.Location='southoutside';
+colormap(hsv(20))
+%% 5.2 sat
+tiledlayout(tile_rows,tile_columns);
+for n=1:length(ii_frame_num)
+nexttile
+imshow(Frames_resized_hsv(:,:,2,n))
+text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
+%clim([0.1 0.3])
+end
+cb=colorbar;
+cb.Location='southoutside';
+colormap(inferno(20))
+%% 5.3 val
+tiledlayout(tile_rows,tile_columns);
+for n=1:length(ii_frame_num)
+nexttile
+imshow(Frames_resized_hsv(:,:,3,n))
+text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
+%clim([0 0.6])
+end
+cb=colorbar;
+cb.Location='southoutside';
+colormap(inferno(20))
+%% 6. edges
+THRESH = [0.08 0.12];
+steady = 3;
+[BW,BW_steady,BW_transient] = get_edges(Frames_resized_adj,THRESH,steady);
+
+tiledlayout(tile_rows,tile_columns);
+for n=1:length(ii_frame_num)
+nexttile
+imshow(BW_transient(:,:,n))
+end
+
+%% 7.1 select water
+n=2;
+F = Frames_resized(:,:,:,n);
+imshow(F)
+h_water = drawfreehand;
+bw_water = createMask(h_water);
+%% 7.2 select air
+imshow(F)
+h_air = drawfreehand;
+bw_air = createMask(h_air);
+%% 8. hsv hsitogrms for air and water 
+F_h=Frames_resized_hsv(:,:,1,n);
+F_s=Frames_resized_hsv(:,:,2,n);
+F_v=Frames_resized_hsv(:,:,3,n);
+
+water_h_low = mean(F_h(bw_water))-3*std(F_h(bw_water));
+water_h_high = mean(F_h(bw_water))+3*std(F_h(bw_water));
+
+water_s_low = mean(F_s(bw_water))-3*std(F_s(bw_water));
+water_s_high = mean(F_s(bw_water))+3*std(F_s(bw_water));
+
+water_v_low = mean(F_v(bw_water))-3*std(F_v(bw_water));
+water_v_high = mean(F_v(bw_water))+3*std(F_v(bw_water));
+
+tiledlayout(3,1)
+hist_edges = 0:0.025:1;
+nexttile
+histogram(F_h(bw_water),hist_edges)
+hold on
+histogram(F_h(bw_air),hist_edges)
+legend('water','air')
+title('h')
+xline([water_h_low water_h_high])
+hold off
 
 nexttile
-histogram(F_s,'FaceColor',[0 0 0])
-title('Saturation')
+histogram(F_s(bw_water),hist_edges)
+hold on
+histogram(F_s(bw_air),hist_edges)
+xline([water_s_low water_s_high])
+title('s')
+hold off
 
 nexttile
-histogram(F_b,'FaceColor',[0 0 1])
-title('Blue')
+histogram(F_v(bw_water),hist_edges)
+hold on
+histogram(F_v(bw_air),hist_edges)
+xline([water_v_low water_v_high])
+title('v')
+hold off
+%% 9. water edges 
+BW_water = (F_h>water_h_low & F_h<water_h_high & F_s>water_s_low & F_s<water_s_high & F_v>water_v_low & F_v<water_v_high);
+BW_edges = BW_transient(:,:,n);
+BW_water_edges = double(BW_water) + double(BW_edges);
 
-nexttile
-histogram(F_v,'FaceColor',[0 0 0])
-title('Value')
-
-
-%% images 
-tile=tiledlayout(3,2);
-t1 = nexttile;
-imshow(F_r)
-colormap(t1,redmap)
-title('Red')
+tiledlayout(2,2)
+t1=nexttile;
+imshow(BW_water)
 
 t2=nexttile;
-imshow(F_h)
-colormap(t2,'hsv')
-title('Hue')
+imshow(BW_edges)
 
-t3 = nexttile;
-imshow(F_g)
-colormap(t3,greenmap)
-title('Green')
+t3=nexttile;
+imshow(BW_water_edges==2)
+colormap(t3,[0 0 0 ; 1 1 1 ; 0 0 1])
+clim([0 2])
+colorbar
 
 t4=nexttile;
-imshow(F_s)
-colormap(t4,'gray')
-title('Saturation')
+imshow(F)
 
-t5 = nexttile;
-imshow(F_b)
-colormap(t5,bluemap)
-title('Blue')
+%% old stuff 
+% hist_edges = 0:0.025:1;
+% nexttile
+% histogram(Frames_resized_hsv(:,:,1,:),hist_edges)
+% 
+% nexttile
+% histogram(Frames_resized_hsv(:,:,2,:),hist_edges)
+% 
+% nexttile
+% histogram(Frames_resized_hsv(:,:,3,:),hist_edges)
 
 
-t6=nexttile;
-imshow(F_v)
-colormap(t6,'gray')
-title('Value')
 
+
+
+
+% %% hue 
+% hue_low = 0;
+% hue_high = 1;
+% Frames_resized_h = squeeze(Frames_resized_hsv(:,:,1,:));
+% 
+% for n=1:length(ii_frame_num)
+% Frames_resized_h(:,:,n) = imadjust(Frames_resized_hsv(:,:,1,n),[hue_low hue_high]);
+% end
+% 
+% tiledlayout(length(ii_frame_num),1);
+% for n=1:length(ii_frame_num)
+% nexttile
+% imshow(Frames_resized_h(:,:,n))
+% colormap(inferno(100))
+% colorbar
+% end
+% %% sat
+% sat_low = 0;
+% sat_high = 1;
+% Frames_resized_s = squeeze(Frames_resized_hsv(:,:,2,:));
+% 
+% for n=1:length(ii_frame_num)
+% Frames_resized_s(:,:,n) = imadjust(Frames_resized_hsv(:,:,2,n),[sat_low sat_high]);
+% end
+% 
+% tiledlayout(length(ii_frame_num),1);
+% for n=1:length(ii_frame_num)
+% nexttile
+% imshow(Frames_resized_s(:,:,n))
+% colormap(inferno(100))
+% colorbar
+% end
+% %% val
+% sat_low = 0;
+% sat_high = 1;
+% Frames_resized_v = squeeze(Frames_resized_hsv(:,:,3,:));
+% 
+% for n=1:length(ii_frame_num)
+% Frames_resized_v(:,:,n) = imadjust(Frames_resized_hsv(:,:,3,n),[sat_low sat_high]);
+% end
+% 
+% tiledlayout(length(ii_frame_num)+1,1);
+% nexttile
+% histogram(Frames_resized_v)
+% xline([sat_low sat_high],'Color',[1 0 0])
+% 
+% for n=1:length(ii_frame_num)
+% nexttile
+% imshow(Frames_resized_hsv(:,:,3,n))
+% colormap(inferno(100))
+% colorbar
+% clim([sat_low sat_high])
+% end
+
+
+
+
+% %%
+% low=0.2;
+% high=1;
+% BW_h=BW;
+% for n=1:length(ii_frame_num)
+% BW_h(:,:,n)=(Frames_resized_hsv(:,:,1,n)>low & Frames_resized_hsv(:,:,1,n)<high);
+% 
+% end
+% for n=1:length(ii_frame_num)
+% nexttile
+% imshow(BW_h(:,:,n))
+% end
+% %%
+% 
+% 
+% %% view channel ranges
+% low=0.2;
+% high=1;
+% channel=1;
+% for n=1:length(ii_frame_num)
+%     tiledlayout(2,1)
+%     nexttile
+%     histogram(Frames_resized_hsv(:,:,channel,n))
+%     xline([low high])
+% 
+%     nexttile
+%     imshow(Frames_resized_hsv(:,:,channel,n)>low & Frames_resized_hsv(:,:,channel,n)<high);
+%     pause(1)
+% end
+% 
+% %%
+% ii_frame=2
+% F=Frames_resized(:,:,:,ii_frame);
+% 
+% % rgb frames 
+% F_r=F(:,:,1);
+% F_g=F(:,:,2);
+% F_b=F(:,:,3);
+% 
+% % hsv frames 
+% hsv = rgb2hsv(F);
+% F_h=hsv(:,:,1);
+% F_s=hsv(:,:,2);
+% F_v=hsv(:,:,3);
+% 
+% % edges
+% THRESH=[0.01 0.03]+0.02;
+% 
+% BW = edge(im2gray(F),'canny',THRESH);
+% 
+% BW_r = edge(F_r,'canny',THRESH);
+% BW_g = edge(F_g,'canny',THRESH);
+% BW_b = edge(F_b,'canny',THRESH);
+% 
+% BW_h = edge(F_h,'canny',THRESH);
+% BW_s = edge(F_s,'canny',THRESH);
+% BW_v = edge(F_v,'canny',THRESH);
+% 
+% [x_r,Y_r] = get_true_pixels(BW_r);
+% [x_g,Y_g] = get_true_pixels(BW_g);
+% [x_b,Y_b] = get_true_pixels(BW_b);
+% 
+% redmap=[linspace(0,1,256)' zeros(256,1) zeros(256,1)];
+% greenmap=[zeros(256,1) linspace(0,1,256)' zeros(256,1)];
+% bluemap=[zeros(256,1) zeros(256,1) linspace(0,1,256)' ];
+% 
+% %% hsv edges 
+% tile=tiledlayout(3,2);
+% t1 = nexttile;
+% imshow(F_h)
+% colormap(t1,"hsv")
+% colorbar
+% 
+% t2= nexttile;
+% imshow(BW_h)
+% title(['edges= ' num2str(sum(BW_h,'all')) ' THRESH= ' num2str(THRESH)])
+% 
+% 
+% t3 = nexttile;
+% imshow(F_s)
+% colormap(t3,"hsv")
+% 
+% t4= nexttile;
+% imshow(BW_s)
+% title(['edges= ' num2str(sum(BW_s,'all')) ' THRESH= ' num2str(THRESH)])
+% 
+% 
+% t5 = nexttile;
+% imshow(F_v)
+% colormap(t5,"hsv")
+% 
+% t6= nexttile;
+% imshow(BW_v)
+% title(['edges= ' num2str(sum(BW_v,'all')) ' THRESH= ' num2str(THRESH)])
+% 
+% 
+% tile.Padding = 'tight';
+% tile.TileSpacing = 'tight';
+% %% rgb edges 
+% tile=tiledlayout(3,2);
+% t1 = nexttile;
+% imshow(F_r)
+% colormap(t1,redmap)
+% 
+% t2= nexttile;
+% imshow(BW_r)
+% title(['edges= ' num2str(sum(BW_r,'all')) ' THRESH= ' num2str(THRESH)])
+% 
+% t3 = nexttile;
+% imshow(F_g)
+% colormap(t3,greenmap)
+% title('Green')
+% 
+% t4= nexttile;
+% imshow(BW_g)
+% title(['edges= ' num2str(sum(BW_g,'all')) ' THRESH= ' num2str(THRESH)])
+% 
+% 
+% t5 = nexttile;
+% imshow(F_b)
+% colormap(t5,bluemap)
+% title('Blue')
+% 
+% t6= nexttile;
+% imshow(BW_b)
+% title(['edges= ' num2str(sum(BW_b,'all')) ' THRESH= ' num2str(THRESH)])
+% 
+% 
+% tile.Padding = 'tight';
+% tile.TileSpacing = 'tight';
+% 
+% %% histograms 
+% tiledlayout(3,2)
+% nexttile
+% histogram(F_r,'FaceColor',[1 0 0])
+% title('Red')
+% 
+% nexttile
+% histogram(F_h,'FaceColor',[0 0 0])
+% title('Hue')
+% 
+% nexttile
+% histogram(F_g,'FaceColor',[0 1 0])
+% title('Green')
+% 
+% nexttile
+% histogram(F_s,'FaceColor',[0 0 0])
+% title('Saturation')
+% 
+% nexttile
+% histogram(F_b,'FaceColor',[0 0 1])
+% title('Blue')
+% 
+% nexttile
+% histogram(F_v,'FaceColor',[0 0 0])
+% title('Value')
+% 
+% 
+% %% images 
+% tile=tiledlayout(3,2);
+% t1 = nexttile;
+% imshow(F_r)
+% colormap(t1,redmap)
+% title('Red')
+% 
+% t2=nexttile;
+% imshow(F_h)
+% colormap(t2,'hsv')
+% title('Hue')
+% 
+% t3 = nexttile;
+% imshow(F_g)
+% colormap(t3,greenmap)
+% title('Green')
+% 
+% t4=nexttile;
+% imshow(F_s)
+% colormap(t4,'gray')
+% title('Saturation')
+% 
+% t5 = nexttile;
+% imshow(F_b)
+% colormap(t5,bluemap)
+% title('Blue')
+% 
+% 
+% t6=nexttile;
+% imshow(F_v)
+% colormap(t6,'gray')
+% title('Value')
+% 
 
 % clear
 % addpath('video_obj_structs/')
@@ -548,3 +780,4 @@ title('Value')
 % % hold off
 % % end
 % % %%
+
