@@ -15,7 +15,7 @@ test_9_11.paddle_data.amp = [100 60 80 30 60 80 25 50 70 20];
 test_9_11.paddle_data.test_num=[1:10]';
 
 save('test_9_11','test_9_11')
-movefile('test_9_11.mat' ,'/Users/kadequinn/Desktop/wave_tank_expts/data_structs/');
+movefile('test_9_11.mat' ,'/Users/kadequinn/Desktop/glass_channel/data/');
 %% 9/24 
 % A
 test_9_24.A.RED=string(['A005_C004_0924TN.mov';'A005_C005_0924G7.mov';'A005_C006_0924DY.mov';'A005_C007_09241J.mov';'A005_C008_09245L.mov';'A005_C009_09240O.mov';'A005_C010_0924N8.mov';'A005_C011_0924RV.mov';'A005_C012_0924WP.mov';'A005_C013_0924RB.mov']);
@@ -39,5 +39,5 @@ test_9_24.paddle_data.amp = [100 60 80 30 60 80 25 50 70 20];
 test_9_24.paddle_data.test_num=[1:10]';
 
 save('test_9_24','test_9_24')
-movefile('test_9_24.mat' ,'/Users/kadequinn/Desktop/wave_tank_expts/data_structs/');
-%%
+movefile('test_9_24.mat' ,'/Users/kadequinn/Desktop/glass_channel/data/');
+
