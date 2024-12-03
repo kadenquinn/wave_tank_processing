@@ -15,7 +15,8 @@ run_num=3;
 filename = data_struct.(test_struct).(test_ID).(camera_ID)(run_num);
 
 % define video path 
-video_path = "test_1_9_11_2024/GoPro_0/"; 
+video_path = "test_1_9_11_2024/GoPro_0/";
+video_path = "../gopro_0/"; 
 
 % create video object 
 VideoObj=VideoReader(append(video_path,filename));
