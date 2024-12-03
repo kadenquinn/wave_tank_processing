@@ -15,23 +15,23 @@ test_9_11.paddle_data.amp = [100 60 80 30 60 80 25 50 70 20];
 test_9_11.paddle_data.test_num=[1:10]';
 
 save('test_9_11','test_9_11')
-movefile('test_9_11.mat' ,'/Users/kadequinn/Desktop/glass_channel/data/');
+movefile('test_9_11.mat' ,'../data/');
 %% 9/24 
 % A
 test_9_24.A.RED=string(['A005_C004_0924TN.mov';'A005_C005_0924G7.mov';'A005_C006_0924DY.mov';'A005_C007_09241J.mov';'A005_C008_09245L.mov';'A005_C009_09240O.mov';'A005_C010_0924N8.mov';'A005_C011_0924RV.mov';'A005_C012_0924WP.mov';'A005_C013_0924RB.mov']);
-test_9_24.A.GoPro=string(['GX010084.MP4';'GX010085.MP4';'GX010086.MP4';'GX010087.MP4';'GX010088.MP4';'GX010089.MP4';'GX010091.MP4';'GX010092.MP4';'GX010094.MP4';'GX010096.MP4']);
+test_9_24.A.GoPro_2=string(['GX010084.MP4';'GX010085.MP4';'GX010086.MP4';'GX010087.MP4';'GX010088.MP4';'GX010089.MP4';'GX010091.MP4';'GX010092.MP4';'GX010094.MP4';'GX010096.MP4']);
 
 % B 
 test_9_24.B.RED=string(['A005_C014_0924MM.mov';'A005_C015_0924CH.mov';'A005_C017_0924OS.mov';'A005_C019_09244A.mov';'A005_C020_0924RE.mov';'A005_C021_0924WR.mov';'A005_C022_0924E7.mov';'A005_C023_0924XI.mov';'A005_C024_0924P6.mov';'A005_C025_09245M.mov']);
-test_9_24.B.GoPro=string(['GX010057.MP4';'GX010058.MP4';'GX010059.MP4';'GX010060.MP4';'GX010061.MP4';'GX010062.MP4';'GX010063.MP4';'GX010064.MP4';'GX010065.MP4';'GX010066.MP4']);
+test_9_24.B.GoPro_2=string(['GX010057.MP4';'GX010058.MP4';'GX010059.MP4';'GX010060.MP4';'GX010061.MP4';'GX010062.MP4';'GX010063.MP4';'GX010064.MP4';'GX010065.MP4';'GX010066.MP4']);
 
 % C
 test_9_24.C.RED=string(["N/A" ; "N/A" ; "A005_C026_0924ER.mov" ; "A005_C027_09244X.mov" ; "N/A" ; "A005_C028_0924XX.mov" ; "N/A" ; "N/A" ; "N/A" ; "A005_C029_0924G0.mov"]);
-test_9_24.C.GoPro=string(["N/A";"N/A";"GX010067.MP4";"GX010068.MP4";"N/A";"GX010069.MP4";"N/A";"N/A";"N/A";"GX010070.MP4"]);
+test_9_24.C.GoPro_2=string(["N/A";"N/A";"GX010067.MP4";"GX010068.MP4";"N/A";"GX010069.MP4";"N/A";"N/A";"N/A";"GX010070.MP4"]);
 
 % D
 test_9_24.D.RED=string(['A005_C039_0924BQ.mov';'A005_C030_0924IK.mov';'A005_C031_0924VX.mov';'A005_C032_092482.mov';'A005_C033_092470.mov';'A005_C034_0924TU.mov';'A005_C035_0924Y9.mov';'A005_C036_0924CG.mov';'A005_C037_0924NT.mov';'A005_C038_09245S.mov']);
-test_9_24.D.GoPro=string(['GX010071.MP4';'GX010072.MP4';'GX010073.MP4';'GX010074.MP4';'GX010075.MP4';'GX010076.MP4';'GX010077.MP4';'GX010078.MP4';'GX010080.MP4';'GX010081.MP4']);
+test_9_24.D.GoPro_2=string(['GX010071.MP4';'GX010072.MP4';'GX010073.MP4';'GX010074.MP4';'GX010075.MP4';'GX010076.MP4';'GX010077.MP4';'GX010078.MP4';'GX010080.MP4';'GX010081.MP4']);
 
 % paddle_data
 test_9_24.paddle_data.freq = [0.5 0.67 0.67 0.8 0.8 0.8 1 1 1 1.25];
@@ -39,5 +39,5 @@ test_9_24.paddle_data.amp = [100 60 80 30 60 80 25 50 70 20];
 test_9_24.paddle_data.test_num=[1:10]';
 
 save('test_9_24','test_9_24')
-movefile('test_9_24.mat' ,'/Users/kadequinn/Desktop/glass_channel/data/');
+movefile('test_9_24.mat' ,'../data/');
 
