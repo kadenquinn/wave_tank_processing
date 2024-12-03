@@ -4,33 +4,32 @@ clear
 close
 % add paths
 addpath('functions/')
-addpath('data')
 
 % load data structs
-load('test_9_11.mat')
-load('test_9_24.mat')
 load('GoProParams.mat')
-%% 1. select a test run, camera, and wave number  
+%% 1.1 get video object 
+test_date = '9_11';   
+test_ID = 'A';               
+camera_ID = 'GoPro_0';         
+run_num=3;
 
-% test run information 
-test_ID = 'A';
-camera_ID = 'GoPro_0';
-run_num=3; 
+% define video filename 
+data_struct = load(['test_' test_date '.mat']);
+filename = data_struct.(['test_' test_date]).(test_ID).(camera_ID)(run_num);
 
-% path where video is located 
-video_path = "test_1_9_11_2024/gopro_0/";
-
-% camera filename 
-filename = test_9_11.(test_ID).(camera_ID)(run_num); 
+% define video path 
+video_path = ['../Videos_' test_date '_2024/' camera_ID '/']; 
 
 % create video object 
 VideoObj=VideoReader(append(video_path,filename));
+%% index of frames of interest
+wave_num = 5;
 
-% index of frames of interest 
-frame_start = 538;
-frame_spacing = 30;
-frame_end = 717;
-ii_frame_num = frame_start:frame_spacing:frame_end;
+[frame_start,frame_end] = approx_waves(data_struct.(['test_' test_date]).paddle_data.freq(run_num),wave_num,VideoObj.FrameRate);
+
+frame_start=frame_start+40;
+frame_end=frame_end-20;
+ii_frame_num = round(linspace(frame_start,frame_end,10));
 
 % Frames of interest
 Frames = get_undistorted_frames(VideoObj,ii_frame_num,cameraParams);
@@ -39,120 +38,134 @@ Frames = get_undistorted_frames(VideoObj,ii_frame_num,cameraParams);
 % check size of Frames 
 [H,W,~,~]=size(Frames);
 
-% set up height crop using yl and yu
-yl=round(0.4*H);
-yu=round(0.78*H);
-Hcrop=yl:yu;
-
-%  set up width crop using xl and xu
-xl=1;
-xu=W;
-Wcrop=xl:xu;
+% crop 
+Hcrop=(900:1350);  %Hcrop=1:H;
+Wcrop=(1:W);       %Wcrop=1:W;
 
 for n=1:length(ii_frame_num)
 nexttile
-imshow(Frames(:,:,:,n))
+imshow(Frames(Hcrop,Wcrop,:,n))
 title(ii_frame_num(n))
-axis image
-xlim([xl xu])
-ylim([yl yu])
-xticklabels([])
-yticklabels([])
 end
 hold off
-%% 4. adjust frames
+%% 3. adjust frames
+Frames_resized = get_resized_frames(Frames(Hcrop,Wcrop,:,:),0.1);
+Frames_resized_hsv = get_hsv_frames(Frames_resized);
+Frames_resized_gray = get_gray_frames(Frames_resized);
 
-% frames matrix 
-Frames_rgb = Frames(Hcrop,Wcrop,:,:); 
+low_in=0.2;
+high_in=0.8;
+Frames_resized_adj = get_adj_frames(Frames_resized,low_in,high_in);
 
-% adjust rgb 
-Frames_rgb(:,:,1,:) = 1*Frames(Hcrop,Wcrop,1,:); % red 
-Frames_rgb(:,:,2,:) = 1*Frames(Hcrop,Wcrop,2,:); % green
-Frames_rgb(:,:,3,:) = 1*Frames(Hcrop,Wcrop,3,:); % blue
-
-% convert frames to gray 
-Frames_gray = get_gray_frames(Frames_rgb);
-
-% pre-allocate edges of frames 
-Frames_BW=false(length(Hcrop),length(Wcrop),length(ii_frame_num));
-
-% pre-allocate adjusted frames 
-Frames_adj=Frames_gray;
-
-for ii_frame=1:length(ii_frame_num)
-F=Frames_gray(:,:,ii_frame);
-
-% adjust brightness 
-low_in=0;
-high_in=1;
-
-F_adj=imadjust(F,[low_in high_in]);
-F_adj=imsharpen(F_adj);
-Frames_adj(:,:,ii_frame)=F_adj;
-
-% edge finding 
-THRESH = [0.06 0.09];
-[BW,threshOut] = edge(F_adj,'Canny',THRESH);
-Frames_BW(:,:,ii_frame)=BW;
-
-tiledlayout(3,1)
-
-% rgb image 
+for n=1:length(ii_frame_num)
 nexttile
-imshow(Frames_rgb(:,:,:,ii_frame))
-title(['frame: ' num2str(ii_frame_num(ii_frame))])
-
-% adjusted gray scale image 
-nexttile
-imshow(F_adj)
-colormap(inferno(256))
-
-% edges 
-nexttile
-imshow(BW)
-title(threshOut)
-
-pause(0.5)
+imshow(Frames_resized_adj(:,:,n))
 end
+colormap(inferno(20))
+%% 4. view edges 
+THRESH = [0.06 0.10];
+steady = 5;
+[BW,BW_steady,BW_transient] = get_edges(Frames_resized_adj,THRESH,steady);
+
+for n=1:length(ii_frame_num)
+nexttile
+imshow(BW_transient(:,:,n))
+end
+
+
+
+
+% % frames matrix 
+% Frames_rgb = Frames(Hcrop,Wcrop,:,:); 
+% 
+% % adjust rgb 
+% Frames_rgb(:,:,1,:) = 1*Frames(Hcrop,Wcrop,1,:); % red 
+% Frames_rgb(:,:,2,:) = 1*Frames(Hcrop,Wcrop,2,:); % green
+% Frames_rgb(:,:,3,:) = 1*Frames(Hcrop,Wcrop,3,:); % blue
+% 
+% % convert frames to gray 
+% Frames_gray = get_gray_frames(Frames_rgb);
+% 
+% % pre-allocate edges of frames 
+% Frames_BW=false(length(Hcrop),length(Wcrop),length(ii_frame_num));
+% 
+% % pre-allocate adjusted frames 
+% Frames_adj=Frames_gray;
+% 
+% for ii_frame=1:length(ii_frame_num)
+% F=Frames_gray(:,:,ii_frame);
+% 
+% % adjust brightness 
+% low_in=0;
+% high_in=1;
+% 
+% F_adj=imadjust(F,[low_in high_in]);
+% F_adj=imsharpen(F_adj);
+% Frames_adj(:,:,ii_frame)=F_adj;
+% 
+% % edge finding 
+% THRESH = [0.06 0.09];
+% [BW,threshOut] = edge(F_adj,'Canny',THRESH);
+% Frames_BW(:,:,ii_frame)=BW;
+% 
+% tiledlayout(3,1)
+% 
+% % rgb image 
+% nexttile
+% imshow(Frames_rgb(:,:,:,ii_frame))
+% title(['frame: ' num2str(ii_frame_num(ii_frame))])
+% 
+% % adjusted gray scale image 
+% nexttile
+% imshow(F_adj)
+% colormap(inferno(256))
+% 
+% % edges 
+% nexttile
+% imshow(BW)
+% title(threshOut)
+% 
+% pause(0.5)
+% end
 
 %% 5. remove steady edges
-cutoff=0.25*length(ii_frame_num);    
-
-% pre-allocate transient BW 
-Frames_BW_transient=Frames_BW;
-
-% total times pixel is edge 
-sum_Frames_BW=sum(Frames_BW,3);
-
-% total times pixel is edge >= cuttof 
-BW_cutoff=sum_Frames_BW>=cutoff;
-
-% thicken and bridge 
-BW_cutoff=bwmorph(BW_cutoff,'thicken',3);
-BW_cutoff=bwmorph(BW_cutoff,'bridge',10);
-
-for n=1:length(ii_frame_num)
-  BW=Frames_BW(:,:,n);
-  BW(BW_cutoff)=false;
-  BW=bwmorph(BW,'clean');
-  Frames_BW_transient(:,:,n)=BW;
-end
-
-imshow(BW_cutoff)
+% cutoff=0.25*length(ii_frame_num);    
+% 
+% % pre-allocate transient BW 
+% Frames_BW_transient=Frames_BW;
+% 
+% % total times pixel is edge 
+% sum_Frames_BW=sum(Frames_BW,3);
+% 
+% % total times pixel is edge >= cuttof 
+% BW_cutoff=sum_Frames_BW>=cutoff;
+% 
+% % thicken and bridge 
+% BW_cutoff=bwmorph(BW_cutoff,'thicken',3);
+% BW_cutoff=bwmorph(BW_cutoff,'bridge',10);
+% 
+% for n=1:length(ii_frame_num)
+%   BW=Frames_BW(:,:,n);
+%   BW(BW_cutoff)=false;
+%   BW=bwmorph(BW,'clean');
+%   Frames_BW_transient(:,:,n)=BW;
+% end
+% 
+% imshow(BW_cutoff)
 %%
-for ii_frame=1:length(ii_frame_num)
-imshow(Frames_BW_transient(:,:,ii_frame))
-pause(1)
-end
-%% 5.5 view edges and overlay edges 
-for ii_frame=1
-[x_T,Y_T] = get_true_pixels(Frames_BW_transient(:,:,ii_frame));
-imshow(Frames(Hcrop,Wcrop,:,ii_frame))
-hold on
-scatter(x_T,Y_T,1,'MarkerEdgeColor',[0 0 1])
-set(gca,'Ydir','reverse')
-hold off
-end
+% for ii_frame=1:length(ii_frame_num)
+% imshow(Frames_BW_transient(:,:,ii_frame))
+% pause(1)
+% end
+% %% 5.5 view edges and overlay edges 
+% for ii_frame=1
+% [x_T,Y_T] = get_true_pixels(Frames_BW_transient(:,:,ii_frame));
+% imshow(Frames(Hcrop,Wcrop,:,ii_frame))
+% hold on
+% scatter(x_T,Y_T,1,'MarkerEdgeColor',[0 0 1])
+% set(gca,'Ydir','reverse')
+% hold off
+% end
 
 %% region of interest (ROI) QC 
 ii_frame=1;
