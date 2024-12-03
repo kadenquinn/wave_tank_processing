@@ -4,63 +4,52 @@ clear
 close 
 % add stuff to path 
 addpath('functions/')
-addpath('data/')
-%% 1. get video strcut and frames
-% define video filename 
-test_struct = 'test_9_11';   
-data_struct = load([test_struct '.mat']);
-test_ID = 'A';               
-camera_ID = 'GoPro_0';         
+addpath('../data/')
+%% 1. get video object 
+test_date = '9_24';   
+test_ID = 'B';               
+camera_ID = 'RED';         
 run_num=3;
-filename = data_struct.(test_struct).(test_ID).(camera_ID)(run_num);
+
+% define video filename 
+data_struct = load(['test_' test_date '.mat']);
+filename = data_struct.(['test_' test_date]).(test_ID).(camera_ID)(run_num);
 
 % define video path 
-video_path = "test_1_9_11_2024/GoPro_0/"; 
+video_path = ['../Videos_' test_date '_2024/' camera_ID '/']; 
 
 % create video object 
 VideoObj=VideoReader(append(video_path,filename));
 
-% desired frames 
+%% 2. select desired frames
 
-% method 1: load predefined start and end frame
-addpath('ii_start_end_frame/')
-load('test_9_11_A3_GoPro_0_wave_4.mat')
-
-% method 2: set start and end frame here
-% ii_start_end_frame = [1 10];
-
-% method 1: set total number of frames from start to end 
-ii_frame_num = round(linspace(ii_start_end_frame(1),ii_start_end_frame(2),5));
-
-% method 2: set frame spacing from start to end 
-%ii_frame_num = ii_start_end_frame(1):10:ii_start_end_frame(2);
+wave_num = 5;
+freq = data_struct.(['test_' test_date]).paddle_data.freq(run_num);
+[frame_start,frame_end] = approx_waves(freq,wave_num,VideoObj.FrameRate);
+ii_frame_num = round(linspace(frame_start,frame_end,15));
 Frames = get_frames(VideoObj,ii_frame_num);
 %% 2. full color, full size 
-
 % check size of frames 
 [H,W,~,~]=size(Frames);
 
-% example of no crop 
-%Hcrop=1:H;
-%Wcrop=1:W;
-
 % crop 
-Hcrop=(900:1300); 
-Wcrop=(1:W);  
+Hcrop=(800:1300); %Hcrop=1:H;
+Wcrop=(1:W);      %Wcrop=1:W;
 
 % set up tile layout specs
 tile_rows = 5;
-tile_columns = 1; 
+tile_columns = 3; 
 tile=tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
 imshow(Frames(Hcrop,Wcrop,:,n))
-text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
+%text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
+title(['frame: ' num2str(ii_frame_num(n))])
 end
 tile.Padding = 'tight';
 tile.TileSpacing = 'tight';
 %% 3. resize and recolor
-Frames_resized = get_resized_frames(Frames(Hcrop,Wcrop,:,:),0.1);
+Frames_resized = get_resized_frames(Frames(Hcrop,Wcrop,:,:),0.5);
 Frames_resized_hsv = get_hsv_frames(Frames_resized);
 Frames_resized_gray = get_gray_frames(Frames_resized);
 
@@ -71,32 +60,33 @@ imshow(Frames_resized(:,:,:,n))
 text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
 end
 %% 4. adjust gray image 
-low_in=0.3;
-high_in=1;
+low_in=0.4;
+high_in=0.6;
 Frames_resized_adj = get_adj_frames(Frames_resized,low_in,high_in);
 
-tiledlayout(tile_rows,tile_columns);
+tile=tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
 imshow(Frames_resized_adj(:,:,n))
-text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
+%text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
 end
 colormap(inferno(20))
-
+tile.Padding = 'tight';
+tile.TileSpacing = 'tight';
 %% 5. hsv histograms 
 tiledlayout(3,1)
 
-hist_edges = 0:0.025:1;
+hist_edges = 0:0.01:1;
 nexttile
-histogram(Frames_resized_hsv(:,:,1,:),hist_edges)
+histogram(Frames_resized_hsv(:,:,1,:),hist_edges,'Normalization','probability')
 title('h')
 
 nexttile
-histogram(Frames_resized_hsv(:,:,2,:),hist_edges)
+histogram(Frames_resized_hsv(:,:,2,:),hist_edges,'Normalization','probability')
 title('s')
 
 nexttile
-histogram(Frames_resized_hsv(:,:,3,:),hist_edges)
+histogram(Frames_resized_hsv(:,:,3,:),hist_edges,'Normalization','probability')
 title('v')
 %% 5.1 hue
 tiledlayout(tile_rows,tile_columns);
@@ -114,7 +104,6 @@ for n=1:length(ii_frame_num)
 nexttile
 imshow(Frames_resized_hsv(:,:,2,n))
 text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
-%clim([0.1 0.3])
 end
 cb=colorbar;
 cb.Location='southoutside';
@@ -125,14 +114,13 @@ for n=1:length(ii_frame_num)
 nexttile
 imshow(Frames_resized_hsv(:,:,3,n))
 text(1,1,['frame: ' num2str(ii_frame_num(n))],'HorizontalAlignment','left','VerticalAlignment','top','BackgroundColor',[1 1 1])
-%clim([0 0.6])
 end
 cb=colorbar;
 cb.Location='southoutside';
 colormap(inferno(20))
 %% 6. edges
-THRESH = [0.08 0.12];
-steady = 3;
+THRESH = [0.15 0.2];
+steady = 10;
 [BW,BW_steady,BW_transient] = get_edges(Frames_resized_adj,THRESH,steady);
 
 tiledlayout(tile_rows,tile_columns);
@@ -140,9 +128,14 @@ for n=1:length(ii_frame_num)
 nexttile
 imshow(BW_transient(:,:,n))
 end
+%%
+for n=1:length(ii_frame_num)
+imshow(BW_transient(:,:,n))
+pause(0.5)
+end
 
 %% 7.1 select water
-n=2;
+n=1;
 F = Frames_resized(:,:,:,n);
 imshow(F)
 h_water = drawfreehand;
@@ -152,65 +145,73 @@ imshow(F)
 h_air = drawfreehand;
 bw_air = createMask(h_air);
 %% 8. hsv hsitogrms for air and water 
+
+
+% add hsitogram for all 
+
 F_h=Frames_resized_hsv(:,:,1,n);
 F_s=Frames_resized_hsv(:,:,2,n);
 F_v=Frames_resized_hsv(:,:,3,n);
 
-water_h_low = mean(F_h(bw_water))-3*std(F_h(bw_water));
-water_h_high = mean(F_h(bw_water))+3*std(F_h(bw_water));
+water_h_low = mean(F_h(bw_water))-1*std(F_h(bw_water));
+water_h_high = mean(F_h(bw_water))+1*std(F_h(bw_water));
 
-water_s_low = mean(F_s(bw_water))-3*std(F_s(bw_water));
-water_s_high = mean(F_s(bw_water))+3*std(F_s(bw_water));
+water_s_low = mean(F_s(bw_water))-1*std(F_s(bw_water));
+water_s_high = mean(F_s(bw_water))+1*std(F_s(bw_water));
 
-water_v_low = mean(F_v(bw_water))-3*std(F_v(bw_water));
-water_v_high = mean(F_v(bw_water))+3*std(F_v(bw_water));
+water_v_low = mean(F_v(bw_water))-1*std(F_v(bw_water));
+water_v_high = mean(F_v(bw_water))+1*std(F_v(bw_water));
 
 tiledlayout(3,1)
-hist_edges = 0:0.025:1;
+hist_edges = 0:0.01:1;
 nexttile
-histogram(F_h(bw_water),hist_edges)
+histogram(F_h(bw_water),hist_edges,'Normalization','probability')
 hold on
-histogram(F_h(bw_air),hist_edges)
+histogram(F_h(bw_air),hist_edges,'Normalization','probability')
 legend('water','air')
 title('h')
 xline([water_h_low water_h_high])
 hold off
 
 nexttile
-histogram(F_s(bw_water),hist_edges)
+histogram(F_s(bw_water),hist_edges,'Normalization','probability')
 hold on
-histogram(F_s(bw_air),hist_edges)
+histogram(F_s(bw_air),hist_edges,'Normalization','probability')
 xline([water_s_low water_s_high])
 title('s')
 hold off
 
 nexttile
-histogram(F_v(bw_water),hist_edges)
+histogram(F_v(bw_water),hist_edges,'Normalization','probability')
 hold on
-histogram(F_v(bw_air),hist_edges)
+histogram(F_v(bw_air),hist_edges,'Normalization','probability')
 xline([water_v_low water_v_high])
 title('v')
 hold off
 %% 9. water edges 
-BW_water = (F_h>water_h_low & F_h<water_h_high & F_s>water_s_low & F_s<water_s_high & F_v>water_v_low & F_v<water_v_high);
-BW_edges = BW_transient(:,:,n);
-BW_water_edges = double(BW_water) + double(BW_edges);
+
+channel_limits=[water_h_low water_h_high ; water_s_low water_s_high ; water_v_low water_v_high];
+BW_water = limit_color_channels(Frames_resized_hsv,channel_limits);
+
+n=3;
+
+BW_water_edges = double(BW_water) + double(BW_transient);
 
 tiledlayout(2,2)
 t1=nexttile;
-imshow(BW_water)
+imshow(BW_water(:,:,n))
 
 t2=nexttile;
-imshow(BW_edges)
+imshow(BW_transient(:,:,n))
 
 t3=nexttile;
-imshow(BW_water_edges==2)
-colormap(t3,[0 0 0 ; 1 1 1 ; 0 0 1])
+imshow(BW_water_edges(:,:,n))
+%colormap(t3,[0 0 0 ; 1 1 1 ; 0 0 1])
 clim([0 2])
 colorbar
 
 t4=nexttile;
-imshow(F)
+imshow(Frames_resized(:,:,:,n))
 
 %% old stuff 
 % hist_edges = 0:0.025:1;
@@ -780,4 +781,3 @@ imshow(F)
 % % hold off
 % % end
 % % %%
-
