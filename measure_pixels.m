@@ -1,30 +1,30 @@
-%% load data and add stuff to path 
-
+%% scirpt that ulizizes GUI to measure pixels 
+%% 0. load data and add stuff to path 
 clear
 % add paths
 addpath('functions/')
-addpath('gopro_cam_cal/')
-addpath('data_structs/')
-addpath('Colormaps/')
 
 % load data structs
-load('test_9_11.mat')
-load('test_9_24.mat')
-load('GoProParams.mat')
+load('../data/GoProParams.mat')
 %% 1. select a test run and camera 
+test_date = '9_11';   
+test_ID = 'A';               
+camera_ID = 'GoPro_0';         
+run_num=3;
 
-test_ID = 'A';
-camera_ID = 'GoPro_0';
-run_num=3; 
-video_path = "test_1_9_11_2024/gopro_0/";
-filename = test_9_11.(test_ID).(camera_ID)(run_num); % camera filename 
+% define video filename 
+data_struct = load(['test_' test_date '.mat']);
+filename = data_struct.(['test_' test_date]).(test_ID).(camera_ID)(run_num);
+
+% define video path 
+video_path = ['../Videos_' test_date '_2024/' camera_ID '/']; 
 
 % create video object 
 VideoObj=VideoReader(append(video_path,filename));
 
-%% 1. get image and annotate scales 
+%% 2. get image and annotate scales 
 % for GoPro 
-IM=get_undistorted_frames(VideoObj,1,cameraParams);
+IM=get_undistorted_frames(VideoObj,VideoObj.NumFrames-10,cameraParams);
 
 % for RED 
 %IM=read(VideoObj,1);
@@ -103,7 +103,7 @@ tile.Padding='compact';
 tile.TileSpacing='compact';
 %% 3. save as fig and pdf 
 savefig(fig,filename)
-movefile([filename '.fig'],'/Users/kadequinn/Desktop/wave_tank_expts/QC_figs/');
+movefile([filename '.fig'],'/Users/kadequinn/Desktop/glass_channel/QC_figs/');
 print(gcf,[filename '.pdf'],'-dpdf','-vector');  
-movefile([filename '.pdf'],'/Users/kadequinn/Desktop/wave_tank_expts/QC_figs/');
+movefile([filename '.pdf'],'/Users/kadequinn/Desktop/glass_channel/QC_figs/');
 %%
