@@ -47,7 +47,7 @@ video_path = ['../Videos_' test_date '_2024/' camera_ID '/'];
 % create video object 
 VideoObj=VideoReader(append(video_path,filename));
 %% get Frames 
-load('wave_start_end_frames.mat')
+load('data/wave_start_end_frames.mat')
 frame_start = wave_start_end_frames.(['test_' test_date]).(camera_ID).([test_ID num2str(run_num)]).frame_start(wave_num);
 frame_end = wave_start_end_frames.(['test_' test_date]).(camera_ID).([test_ID num2str(run_num)]).frame_end(wave_num);
 ii_frame_num = round(linspace(frame_start,frame_end,num_frames));
@@ -100,7 +100,8 @@ for n=1:length(ii_frame_num)
 end
 
 savefig(fig1,[fig_filename '_Frames'])
-movefile([fig_filename '_Frames.fig'],['../L1_QC_figs/test_' test_date '/' camera_ID '/' test_ID '/'])
+movefile([fig_filename '_Frames.fig'],['../L1_QC_figs/test_' test_date ])
+
 %% 2. view resized Frames
 fig2=figure(2);
 tile = tiledlayout(tile_rows,tile_columns);
