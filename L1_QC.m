@@ -1,4 +1,5 @@
 %% future script for L1 QC 
+% do not use
 %% 0 . load add path ect
 clear
 close
