@@ -37,6 +37,7 @@ high_in=1;
 THRESH = [0.1 0.2];
 % number of frames for an edge to be steady  
 steady = num_frames/2;
+
 %% get VideoObj
 % define video filename 
 data_struct = load(['test_' test_date '.mat']);
@@ -76,8 +77,10 @@ Frames_resized = get_resized_frames(Frames,scale);
 Frames_resized_adj = get_adj_frames(Frames_resized,low_in,high_in);
 %% get edges 
 [BW,BW_steady,BW_transient] = get_edges(Frames_resized_adj,THRESH,steady);
+%% fig filenames
+fig_filename = ['test_' test_date '_' camera_ID '_' test_ID num2str(run_num) '_wave_' num2str(wave_start_end_frames.(['test_' test_date]).(camera_ID).([test_ID num2str(run_num)]).wave_num(wave_num))];
 %% 1. view Frames
-figure(1);
+fig1=figure(1);
 tile = tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
     nexttile
@@ -95,8 +98,11 @@ for n=1:length(ii_frame_num)
         title(['wave: ' num2str(wave_start_end_frames.(['test_' test_date]).(camera_ID).([test_ID num2str(run_num)]).wave_num(wave_num))])
     end
 end
+
+savefig(fig1,[fig_filename '_Frames'])
+movefile([fig_filename '_Frames.fig'],['../L1_QC_figs/test_' test_date '/' camera_ID '/' test_ID '/'])
 %% 2. view resized Frames
-figure(2);
+fig2=figure(2);
 tile = tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
     nexttile
@@ -115,8 +121,11 @@ for n=1:length(ii_frame_num)
     end
     colormap(inferno(255))
 end
+
+savefig(fig2,[fig_filename '_Frames_RA']) % Resized Adjusted 
+movefile([fig_filename '_Frames_RA.fig'],['../L1_QC_figs/test_' test_date '/' camera_ID '/' test_ID '/'])
 %% 3. view edges 
-figure(3);
+fig3=figure(3);
 tile = tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
     nexttile
@@ -135,3 +144,6 @@ for n=1:length(ii_frame_num)
     end
     colormap([0 0 0 ; 1 1 1])
 end
+
+savefig(fig3,[fig_filename '_Frames_edges'])
+movefile([fig_filename '_Frames_edges.fig'],['../L1_QC_figs/test_' test_date '/' camera_ID '/' test_ID '/'])
