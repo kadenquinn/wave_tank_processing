@@ -7,9 +7,9 @@ addpath('functions/')
 % load data structs
 load('../data/GoProParams.mat')
 %% 1. select a test run and camera 
-test_date = '9_11';   
+test_date = '9_24';   
 test_ID = 'A';               
-camera_ID = 'GoPro_0';         
+camera_ID = 'RED_mp4';         
 run_num=3;
 
 % define video filename 
@@ -23,25 +23,33 @@ video_path = ['../Videos_' test_date '_2024/' camera_ID '/'];
 VideoObj=VideoReader(append(video_path,filename));
 
 %% 2. get image and annotate scales 
-% for GoPro 
-IM=get_undistorted_frames(VideoObj,VideoObj.NumFrames-10,cameraParams);
 
-% for RED 
-%IM=read(VideoObj,1);
-
-%title and filename for plots 
-titstr = [test_ID num2str(run_num) ' ' camera_ID];
-filename = [test_ID num2str(run_num) '_' camera_ID];
-
-imageViewer(IM)
 % this will launch imageViewer
 % Use it to measure distance throughout the image at (10 ish) locations 
 % once done, export these distance measruments to worksapce 
 % make sure you keep the naming sceme as D##
 
-% for RED 
-%IM=read(A_runs_reef.test_7.RED,1);
+% select frame to annotate
+ii_frame = 1;
 
+%title and filename for plots 
+titstr = [test_ID num2str(run_num) ' ' camera_ID];
+filename = [test_ID num2str(run_num) '_' camera_ID];
+
+% for GoPro 
+camera_IDs_GoPro = {'GoPro_0', 'GoPro_1', 'GoPro_2'};
+if ismember(camera_ID,camera_IDs_GoPro)
+IM=get_undistorted_frames(VideoObj,ii_frame,cameraParams);
+end
+
+% for RED
+camera_IDs_RED = {'RED', 'RED_mp4'};
+if ismember(camera_ID,camera_IDs_RED)
+IM=get_frames(VideoObj,ii_frame);
+end
+
+% laucnh 
+imageViewer(IM)
 %% 2. view results 
 % find number of distance measruments created based on naming scheme of D##
 vars_in_workspace=who;
@@ -69,7 +77,6 @@ stdValue = std(values);
 
 fig=figure;
 tile=tiledlayout(2,1);
-set(groot,'defaultAxesTickLabelInterpreter','latex');  
 
 nexttile
 imshow(IM)
@@ -78,7 +85,6 @@ scatter(xs,ys,values,values,'filled')
 cb=colorbar;
 cb.Location = "southoutside";
 cb.Label.String = 'pixels/0.5 in';
-cb.Label.Interpreter = 'latex';
     for i = 1:num
     structName = sprintf('D%d', i);
     Pos = eval([structName '.Position']);
@@ -86,13 +92,13 @@ cb.Label.Interpreter = 'latex';
     hold on
     end
 hold off 
-title(titstr,'Interpreter','latex')
+title(titstr)
 hold off
 
 nexttile
 histogram(values,5)
-title(['$\mu=$' num2str(meanValue) ' $\sigma=$' num2str(stdValue) ' N=' num2str(num)],'Interpreter','latex')
-xlabel('pixels/0.5 in','Interpreter','latex')
+title(['\mu=' num2str(meanValue) ' \sigma=' num2str(stdValue) ' N=' num2str(num)])
+xlabel('pixels/0.5 in')
 
 % figure size and specs 
 fontsize(8,"points")

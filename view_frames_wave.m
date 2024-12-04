@@ -1,4 +1,4 @@
-%% scirpt for setting start and end frame for a given test run and wave 
+%% ARCHIVE scirpt for setting start and end frame for a given test run and wave 
 %% 0. clear close load data paths ect
 clear
 close 

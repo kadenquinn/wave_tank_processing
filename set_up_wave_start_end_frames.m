@@ -4,11 +4,18 @@ close
 % add stuff to path 
 addpath('functions/')
 addpath('../data/')
+load('wave_start_end_frames.mat')
+wave_start_end_frames.test_9_11.GoPro_0
 %% 1. get video object 
-test_date = '9_24';   
+test_date = '9_11';   
 test_ID = 'A';               
+
 camera_ID = 'GoPro_2';         
 run_num=3;
+
+camera_ID = 'GoPro_0';         
+run_num=10;
+
 title_str=[test_date '_' test_ID num2str(run_num) '_' camera_ID];
 
 % define video filename 
@@ -24,21 +31,27 @@ VideoObj=VideoReader(append(video_path,filename));
 VideoObj
 return
 %% 2. estimate waves 
+% use these to shift start and end frames if needed
+start_adj = 96;
+end_adj = 130;
 
-% paddle freq is generaly pretty good
 % tune freq using A_f if needed
+A_f = 0.97; 
+
+%%%%%%%%%%%%%%%%%%%%%%%
+
+% paddle freq 
 freq_paddle = data_struct.(['test_' test_date]).paddle_data.freq(run_num);
-A_f = 1;
+
+%A_f = 1;
+
+
+% freq 
 freq = freq_paddle*A_f;
 
 % number of waves to show and get start end frames 
 wave_num=1:10;
 [frame_start,frame_end] = approx_waves(freq,wave_num,VideoObj.FrameRate);
-
-% use these to shift start and end frames if needed
-start_adj = 0;
-end_adj = 0;
-
 frame_start = frame_start+start_adj;
 frame_end = frame_end+end_adj;
 
@@ -48,15 +61,16 @@ frame_per_wave = 3;
 % set up frame height crop (use 0-1 for no crop)  
 Hcrop_low=0.4;
 Hcrop_high=0.6;
-Hcrop=(1+round(Hcrop_low*VideoObj.Height)):round(Hcrop_high*VideoObj.Height);
 
-tiledlayout(length(wave_num),frame_per_wave) 
+fig = figure;
+tile = tiledlayout(length(wave_num),frame_per_wave);
 for n=1:length(wave_num)
     ii_frame_num = round(linspace(frame_start(n),frame_end(n),frame_per_wave));
     Frames = get_frames(VideoObj,ii_frame_num);
     [Frames_gray] = get_gray_frames(Frames);
     for nn=1:frame_per_wave
     nexttile
+    Hcrop=(1+round(Hcrop_low*VideoObj.Height)):round(Hcrop_high*VideoObj.Height);
     image(Frames_gray(Hcrop,:,nn))
     xticklabels([])
     yticklabels([])
@@ -81,6 +95,24 @@ for n=1:length(wave_num)
         end
     end
 end
+
+%% 3. save results 
+wave_start_end_frames.(['test_' test_date]).(camera_ID).([test_ID num2str(run_num)]).wave_num = wave_num;
+wave_start_end_frames.(['test_' test_date]).(camera_ID).([test_ID num2str(run_num)]).frame_start = frame_start;
+wave_start_end_frames.(['test_' test_date]).(camera_ID).([test_ID num2str(run_num)]).frame_end = frame_end;
+
+% save figure and move 
+title_str(title_str == ' ') = '_';
+
+savefig(fig,title_str)
+movefile([title_str '.fig'],'/Users/kadequinn/Desktop/glass_channel/wave_start_end_frames_QC/');
+% save wave_start_end_frames
+save('wave_start_end_frames','wave_start_end_frames')
+movefile('wave_start_end_frames.mat','../data/')
+
+
+
+
 
 
 % tiledlayout(length(wave_num),1) 

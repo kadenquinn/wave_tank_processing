@@ -8,7 +8,7 @@ addpath('../data/')
 % pre-allocate test runs 
 test_date = ["9_11" ; "9_24"];   
 test_ID = ["A" ; "A"];               
-camera_ID = ["GoPro_0" ; "RED"];        
+camera_ID = ["GoPro_0" ; "RED_mp4"];        
 run_num=[3 ; 3];
 test_run_ID = join([test_ID run_num test_date camera_ID],'_');
 
