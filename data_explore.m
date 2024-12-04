@@ -8,7 +8,7 @@ addpath('../data/')
 %% 1. get video object 
 test_date = '9_24';   
 test_ID = 'B';               
-camera_ID = 'RED';         
+camera_ID = 'GoPro_2';         
 run_num=3;
 
 % define video filename 
