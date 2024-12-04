@@ -124,7 +124,7 @@ for n=1:length(ii_frame_num)
 end
 
 savefig(fig2,[fig_filename '_Frames_RA']) % Resized Adjusted 
-movefile([fig_filename '_Frames_RA.fig'],['../L1_QC_figs/test_' test_date '/' camera_ID '/' test_ID '/'])
+movefile([fig_filename '_Frames_RA.fig'],['../L1_QC_figs/test_' test_date ])
 %% 3. view edges 
 fig3=figure(3);
 tile = tiledlayout(tile_rows,tile_columns);
@@ -147,4 +147,4 @@ for n=1:length(ii_frame_num)
 end
 
 savefig(fig3,[fig_filename '_Frames_edges'])
-movefile([fig_filename '_Frames_edges.fig'],['../L1_QC_figs/test_' test_date '/' camera_ID '/' test_ID '/'])
+movefile([fig_filename '_Frames_edges.fig'],['../L1_QC_figs/test_' test_date ])
