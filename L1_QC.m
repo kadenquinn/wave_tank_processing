@@ -1,5 +1,7 @@
 clear 
 close
+addpath('../data/')
+addpath('functions/')
 %% 0. user inputs 
 % select video of test run and wave number 
 test_date = '9_11';   
