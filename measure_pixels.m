@@ -78,6 +78,11 @@ stdValue = std(values);
 fig=figure;
 tile=tiledlayout(2,1);
 
+ii = find(values > 0);
+xs = xs(ii);
+ys = ys(ii);
+values = values(ii);
+
 nexttile
 imshow(IM)
 hold on
@@ -109,7 +114,7 @@ tile.Padding='compact';
 tile.TileSpacing='compact';
 %% 3. save as fig and pdf 
 savefig(fig,filename)
-movefile([filename '.fig'],'/Users/kadequinn/Desktop/glass_channel/QC_figs/');
+movefile([filename '.fig'],'../QC_figs/');
 print(gcf,[filename '.pdf'],'-dpdf','-vector');  
-movefile([filename '.pdf'],'/Users/kadequinn/Desktop/glass_channel/QC_figs/');
+movefile([filename '.pdf'],'../QC_figs/');
 %%
