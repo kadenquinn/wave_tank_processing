@@ -24,7 +24,7 @@ video_path = ['../Videos_' test_date '_2024/' camera_ID '/'];
 
 % create video object 
 VideoObj=VideoReader(append(video_path,filename));
-
+disp('done with creating video object')
 %% 2. select desired frames
 
 wave_num = 5;
@@ -41,6 +41,7 @@ Hcrop=(800:1300); %Hcrop=1:H;
 Wcrop=(1:W);      %Wcrop=1:W;
 
 % set up tile layout specs
+figure
 tile_rows = 5;
 tile_columns = 3; 
 tile=tiledlayout(tile_rows,tile_columns);
@@ -57,6 +58,7 @@ Frames_resized = get_resized_frames(Frames(Hcrop,Wcrop,:,:),0.5);
 Frames_resized_hsv = get_hsv_frames(Frames_resized);
 Frames_resized_gray = get_gray_frames(Frames_resized);
 
+figure
 tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -68,6 +70,7 @@ low_in=0.4;
 high_in=0.6;
 Frames_resized_adj = get_adj_frames(Frames_resized,low_in,high_in);
 
+figure
 tile=tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -77,7 +80,8 @@ end
 colormap(inferno(20))
 tile.Padding = 'tight';
 tile.TileSpacing = 'tight';
-%% 5. hsv histograms 
+%% 5. hsv histograms
+figure
 tiledlayout(3,1)
 
 hist_edges = 0:0.01:1;
@@ -93,6 +97,8 @@ nexttile
 histogram(Frames_resized_hsv(:,:,3,:),hist_edges,'Normalization','probability')
 title('v')
 %% 5.1 hue
+
+figure
 tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -103,6 +109,7 @@ cb=colorbar;
 cb.Location='southoutside';
 colormap(hsv(20))
 %% 5.2 sat
+figure
 tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -113,6 +120,7 @@ cb=colorbar;
 cb.Location='southoutside';
 colormap(inferno(20))
 %% 5.3 val
+figure
 tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -123,6 +131,7 @@ cb=colorbar;
 cb.Location='southoutside';
 colormap(inferno(20))
 %% 6. edges
+figure
 THRESH = [0.15 0.2];
 steady = 10;
 [BW,BW_steady,BW_transient] = get_edges(Frames_resized_adj,THRESH,steady);
@@ -139,6 +148,7 @@ pause(0.5)
 end
 
 %% 7.1 select water
+%% This opens a gui to select water and air
 n=1;
 F = Frames_resized(:,:,:,n);
 imshow(F)

@@ -7,8 +7,8 @@ addpath('../data/')
 %% 1. get video object 
 test_date = '9_24';   
 test_ID = 'A';               
-camera_ID = 'RED';         
-run_num=10;
+camera_ID = 'GoPro_2';         
+run_num=3;
 title_str=[test_date '_' test_ID num2str(run_num) '_' camera_ID];
 
 % define video filename 
@@ -21,12 +21,14 @@ video_path = ['../Videos_' test_date '_2024/' camera_ID '/'];
 % create video object 
 VideoObj=VideoReader(append(video_path,filename));
 
+VideoObj
+return
 %% 2. estimate waves 
 
 % paddle freq is generaly pretty good
 % tune freq using A_f if needed
 freq_paddle = data_struct.(['test_' test_date]).paddle_data.freq(run_num);
-A_f = 0.5;
+A_f = 1;
 freq = freq_paddle*A_f;
 
 % number of waves to show and get start end frames 
