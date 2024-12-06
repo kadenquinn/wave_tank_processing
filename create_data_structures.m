@@ -43,5 +43,44 @@ test_9_24.paddle_data.amp = [100 60 80 30 60 80 25 50 70 20];
 test_9_24.paddle_data.test_num=[1:10]';
 
 save('test_9_24','test_9_24')
-movefile('test_9_24.mat' ,'../data/');
+movefile('test_9_24.mat' ,'../data/'); 
+%% slope measurments (inches) 
+% 9/11 
+% A
+test_slopes.test_9_11.A.x = [-125.5 -75 -2.75 69 140];
+test_slopes.test_9_11.A.h = [0 3.3125 6.0625 10.125 15.5];
+test_slopes.test_9_11.A.surface = 40*0.393701; 
 
+% B
+test_slopes.test_9_11.B.x = [-125.5 -75 -2.75 69 140];
+test_slopes.test_9_11.B.h = [0 3.375 8.375 14.875 22.9375];
+test_slopes.test_9_11.B.surface = 40*0.393701;
+
+% 9/24 
+% A  
+test_slopes.test_9_24.A.x = [-125.5 -75 -2.75 69 140];
+test_slopes.test_9_24.A.h = [0 3.5 6.25 10.5 15.5];
+test_slopes.test_9_24.A.surface = 42*0.393701; 
+test_slopes.test_9_24.A.x_reef = 0;
+
+% B
+test_slopes.test_9_24.B.x = [-125.5 -75 -2.75 69 140];
+test_slopes.test_9_24.B.h = [0 3.5 6.25 10.5 15.5];
+test_slopes.test_9_24.B.surface = 42*0.393701; 
+test_slopes.test_9_24.B.x_reef = 23;
+
+% C
+test_slopes.test_9_24.C.x = [-125.5 -75 -2.75 69 140];
+test_slopes.test_9_24.C.h = [0 3.5 6.25 10.5 15.5];
+test_slopes.test_9_24.C.surface = 42*0.393701; 
+test_slopes.test_9_24.C.x_reef = 41;
+
+% D
+test_slopes.test_9_24.D.x = [-125.5 -75 -2.75 69 140];
+test_slopes.test_9_24.D.h = [0 3.5 6.25 10.5 15.5];
+test_slopes.test_9_24.D.surface = 42*0.393701; 
+test_slopes.test_9_24.D.x_reef = 0;
+
+save('test_slopes','test_slopes')
+movefile('test_slopes.mat' ,'../data/'); 
+%%
