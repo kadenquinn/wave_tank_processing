@@ -4,12 +4,10 @@ clear
 % add paths
 addpath('functions/')
 
-% load data structs
-load('../data/GoProParams.mat')
 %% 1. select a test run and camera 
 test_date = '9_24';   
 test_ID = 'A';               
-camera_ID = 'RED_mp4';         
+camera_ID = 'GoPro_2';         
 run_num=3;
 
 % define video filename 
@@ -33,19 +31,21 @@ VideoObj=VideoReader(append(video_path,filename));
 ii_frame = 1;
 
 %title and filename for plots 
-titstr = [test_ID num2str(run_num) ' ' camera_ID];
+title_str = [test_ID num2str(run_num) ' ' camera_ID];
+title_str(title_str=='_') = ' ';
 filename = [test_ID num2str(run_num) '_' camera_ID];
 
 % for GoPro 
 camera_IDs_GoPro = {'GoPro_0', 'GoPro_1', 'GoPro_2'};
 if ismember(camera_ID,camera_IDs_GoPro)
-IM=get_undistorted_frames(VideoObj,ii_frame,cameraParams);
+    load('../data/GoProParams.mat')
+    IM=get_undistorted_frames(VideoObj,ii_frame,cameraParams);
 end
 
 % for RED
 camera_IDs_RED = {'RED', 'RED_mp4'};
 if ismember(camera_ID,camera_IDs_RED)
-IM=get_frames(VideoObj,ii_frame);
+    IM=get_frames(VideoObj,ii_frame);
 end
 
 % laucnh 
@@ -83,21 +83,23 @@ xs = xs(ii);
 ys = ys(ii);
 values = values(ii);
 
+cmap=inferno(length(values));
+
 nexttile
 imshow(IM)
 hold on
-scatter(xs,ys,values,values,'filled')
-cb=colorbar;
-cb.Location = "southoutside";
-cb.Label.String = 'pixels/0.5 in';
     for i = 1:num
     structName = sprintf('D%d', i);
     Pos = eval([structName '.Position']);
     plot(Pos(:,1),Pos(:,2),'Color',[0 0 0],'LineWidth',1)
     hold on
     end
+    scatter(xs,ys,10,values,'filled')
+    cb=colorbar;
+    cb.Location = "southoutside";
+    cb.Label.String = 'pixels/0.5 in';
 hold off 
-title(titstr)
+title(title_str)
 hold off
 
 nexttile
@@ -112,9 +114,8 @@ fig.PaperSize=[6 8];
 fig.Position=[0 0 6 8];
 tile.Padding='compact';
 tile.TileSpacing='compact';
-%% 3. save as fig and pdf 
-savefig(fig,filename)
-movefile([filename '.fig'],'../QC_figs/');
-print(gcf,[filename '.pdf'],'-dpdf','-vector');  
-movefile([filename '.pdf'],'../QC_figs/');
+%% 3. save as png
+
+print(gcf,[filename '.png'],'-dpng','-r600');  
+movefile([filename '.png'],['../measure_QC_figs/test_' test_date])
 %%
