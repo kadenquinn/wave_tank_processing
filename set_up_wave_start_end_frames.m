@@ -1,21 +1,19 @@
 %% 0. load/add path
 clear
-close 
+close all
 % add stuff to path 
 addpath('functions/')
 addpath('../data/')
 load('wave_start_end_frames.mat')
-wave_start_end_frames.test_9_11.GoPro_0
+%wave_start_end_frames.test_9_11.GoPro_0
+%wave_start_end_frames.test_9_11.GoPro_1
+%wave_start_end_frames.test_9_24.RED
+wave_start_end_frames.test_9_24.GoPro_2
 %% 1. get video object 
-test_date = '9_11';   
-test_ID = 'A';               
-
+test_date = '9_24';   
+test_ID = 'C';               
 camera_ID = 'GoPro_2';         
-run_num=3;
-
-camera_ID = 'GoPro_0';         
-run_num=10;
-
+run_num=10; 
 title_str=[test_date '_' test_ID num2str(run_num) '_' camera_ID];
 
 % define video filename 
@@ -28,12 +26,10 @@ video_path = ['../Videos_' test_date '_2024/' camera_ID '/'];
 % create video object 
 VideoObj=VideoReader(append(video_path,filename));
 
-VideoObj
-return
 %% 2. estimate waves 
 % use these to shift start and end frames if needed
-start_adj = 96;
-end_adj = 130;
+start_adj = 0;
+end_adj = 50;
 
 % tune freq using A_f if needed
 A_f = 0.97; 
@@ -42,9 +38,6 @@ A_f = 0.97;
 
 % paddle freq 
 freq_paddle = data_struct.(['test_' test_date]).paddle_data.freq(run_num);
-
-%A_f = 1;
-
 
 % freq 
 freq = freq_paddle*A_f;
@@ -106,11 +99,12 @@ title_str(title_str == ' ') = '_';
 
 savefig(fig,title_str)
 movefile([title_str '.fig'],'/Users/kadequinn/Desktop/glass_channel/wave_start_end_frames_QC/');
+
 % save wave_start_end_frames
 save('wave_start_end_frames','wave_start_end_frames')
 movefile('wave_start_end_frames.mat','../data/')
 
-
+wave_start_end_frames.test_9_24.GoPro_2
 
 
 
