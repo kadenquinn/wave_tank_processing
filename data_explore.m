@@ -1,20 +1,14 @@
 %% script for messing around with techniques 
 %% 0. load/add path
 clear
-close 
+close all
 % add stuff to path 
 addpath('functions/')
 addpath('../data/')
 %% 1. get video object 
-
-%test_date = '9_24';   
-%test_ID = 'B';               
-%camera_ID = 'GoPro_2';         
-
 test_date = '9_11';   
 test_ID = 'A';               
 camera_ID = 'GoPro_0';         
-
 run_num=3;
 
 % define video filename 
@@ -22,18 +16,10 @@ data_struct = load(['test_' test_date '.mat']);
 filename = data_struct.(['test_' test_date]).(test_ID).(camera_ID)(run_num);
 
 % define video path 
-%video_path = "test_1_9_11_2024/GoPro_0/";
-%video_path = "../gopro_0/"; 
-
 video_path = ['../Videos_' test_date '_2024/' camera_ID '/']; 
-
 
 % create video object 
 VideoObj=VideoReader(append(video_path,filename));
-
-disp('done with creating video object')
-%% 2. select desired frames
-
 
 %% 2. select frames using wave number and total frames 
 load('wave_start_end_frames.mat')
@@ -56,7 +42,6 @@ camera_IDs_RED = {'RED', 'RED_mp4'};
 if ismember(camera_ID,camera_IDs_RED)
 Frames=get_frames(VideoObj,ii_frame_num);
 end
->>>>>>> dd4254d79f47a7a95496cf94e8849aa0193b2c2f
 
 %% 2. full color, full size 
 % check size of frames 
@@ -67,16 +52,10 @@ Hcrop=(800:1300); %Hcrop=1:H;
 Wcrop=(1:W);      %Wcrop=1:W;
 
 % set up tile layout specs
-<<<<<<< HEAD
-figure
-tile_rows = 5;
-tile_columns = 3; 
-=======
 tile_rows = num_frames;
 tile_columns = 1; 
 
 figure(1)
->>>>>>> dd4254d79f47a7a95496cf94e8849aa0193b2c2f
 tile=tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -91,11 +70,7 @@ Frames_resized = get_resized_frames(Frames(Hcrop,Wcrop,:,:),0.5);
 Frames_resized_hsv = get_hsv_frames(Frames_resized);
 Frames_resized_gray = get_gray_frames(Frames_resized);
 
-<<<<<<< HEAD
-figure
-=======
 figure(2)
->>>>>>> dd4254d79f47a7a95496cf94e8849aa0193b2c2f
 tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -107,11 +82,7 @@ low_in=0.3;
 high_in=0.7;
 Frames_resized_adj = get_adj_frames(Frames_resized,low_in,high_in);
 
-<<<<<<< HEAD
-figure
-=======
 figure(3)
->>>>>>> dd4254d79f47a7a95496cf94e8849aa0193b2c2f
 tile=tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -121,13 +92,8 @@ end
 colormap(inferno(20))
 tile.Padding = 'tight';
 tile.TileSpacing = 'tight';
-<<<<<<< HEAD
-%% 5. hsv histograms
-figure
-=======
 %% 5. hsv histograms 
 figure(4)
->>>>>>> dd4254d79f47a7a95496cf94e8849aa0193b2c2f
 tiledlayout(3,1)
 hist_edges = 0:0.01:1;
 nexttile
@@ -142,12 +108,7 @@ nexttile
 histogram(Frames_resized_hsv(:,:,3,:),hist_edges,'Normalization','probability')
 title('v')
 %% 5.1 hue
-<<<<<<< HEAD
-
-figure
-=======
 figure(5)
->>>>>>> dd4254d79f47a7a95496cf94e8849aa0193b2c2f
 tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -158,11 +119,7 @@ cb=colorbar;
 cb.Location='southoutside';
 colormap(hsv(20))
 %% 5.2 sat
-<<<<<<< HEAD
-figure
-=======
 figure(6)
->>>>>>> dd4254d79f47a7a95496cf94e8849aa0193b2c2f
 tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -173,11 +130,7 @@ cb=colorbar;
 cb.Location='southoutside';
 colormap(inferno(20))
 %% 5.3 val
-<<<<<<< HEAD
-figure
-=======
 figure(7)
->>>>>>> dd4254d79f47a7a95496cf94e8849aa0193b2c2f
 tiledlayout(tile_rows,tile_columns);
 for n=1:length(ii_frame_num)
 nexttile
@@ -188,7 +141,6 @@ cb=colorbar;
 cb.Location='southoutside';
 colormap(inferno(20))
 %% 6. edges
-figure
 THRESH = [0.15 0.2];
 steady = num_frames;
 [BW,BW_steady,BW_transient] = get_edges(Frames_resized_adj,THRESH,steady);
@@ -205,13 +157,7 @@ ii_frame = 1;
 F = Frames_resized(:,:,:,ii_frame);
 
 %% 7.1 select water
-<<<<<<< HEAD
-%% This opens a gui to select water and air
-n=1;
-F = Frames_resized(:,:,:,n);
-=======
 figure(9)
->>>>>>> dd4254d79f47a7a95496cf94e8849aa0193b2c2f
 imshow(F)
 h_water = drawfreehand;
 bw_water = createMask(h_water);
